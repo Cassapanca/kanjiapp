@@ -27,7 +27,7 @@ class DailyJapaneseWorker(
         if (settings.notificationsEnabled) {
             NotificationHelper.showDailyNotification(
                 applicationContext,
-                "${daily.vocabulary.word} (${daily.vocabulary.reading}) - ${daily.vocabulary.meaning}"
+                "${daily.vocabulary.word} - ${daily.vocabulary.meaning}"
             )
         }
         KanjiDailyWidget.updateAll(applicationContext)

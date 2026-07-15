@@ -12,11 +12,13 @@ private val Context.dataStore by preferencesDataStore("settings")
 class SettingsRepository(private val context: Context) {
     private val notificationsKey = booleanPreferencesKey("daily_notifications")
     private val jlptKey = stringPreferencesKey("preferred_jlpt")
+    private val onboardingCompletedKey = booleanPreferencesKey("onboarding_completed")
 
     val settings = context.dataStore.data.map {
         AppSettings(
             notificationsEnabled = it[notificationsKey] ?: true,
-            preferredJlpt = it[jlptKey] ?: "All"
+            preferredJlpt = it[jlptKey] ?: "All",
+            onboardingCompleted = it[onboardingCompletedKey] ?: false
         )
     }
 
@@ -27,6 +29,14 @@ class SettingsRepository(private val context: Context) {
     suspend fun setJlpt(level: String) {
         context.dataStore.edit { it[jlptKey] = level }
     }
+
+    suspend fun setOnboardingCompleted(completed: Boolean) {
+        context.dataStore.edit { it[onboardingCompletedKey] = completed }
+    }
 }
 
-data class AppSettings(val notificationsEnabled: Boolean, val preferredJlpt: String)
+data class AppSettings(
+    val notificationsEnabled: Boolean,
+    val preferredJlpt: String,
+    val onboardingCompleted: Boolean
+)

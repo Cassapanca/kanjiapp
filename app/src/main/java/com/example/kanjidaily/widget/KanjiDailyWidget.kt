@@ -4,8 +4,11 @@ import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
+import androidx.glance.action.actionStartActivity
+import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
+import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.layout.Column
 import androidx.glance.layout.fillMaxSize
@@ -16,6 +19,8 @@ import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.kanjidaily.MainActivity
 import com.example.kanjidaily.data.local.KanjiDailyDatabase
 import com.example.kanjidaily.data.repository.KanjiDailyRepository
 
@@ -40,11 +45,12 @@ object KanjiDailyWidget : GlanceAppWidget() {
     private fun WidgetContent(kanji: String, reading: String, meaning: String) {
         Column(
             modifier = GlanceModifier.fillMaxSize()
-                .background(ColorProvider(Color(0xFFFFF7F0)))
+                .background(ColorProvider(Color(0xFFFFF8F1)))
+                .clickable(actionStartActivity<MainActivity>())
                 .padding(14.dp)
         ) {
             Text("Kanji Daily", style = TextStyle(fontWeight = FontWeight.Bold))
-            Text(kanji, style = TextStyle(fontWeight = FontWeight.Bold))
+            Text(kanji, style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 34.sp))
             Text(reading)
             Text(meaning)
         }

@@ -10,12 +10,14 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.LaunchedEffect
 import androidx.core.content.ContextCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.kanjidaily.presentation.navigation.KanjiDailyApp
 import com.example.kanjidaily.presentation.viewmodel.ViewModelFactory
 import com.example.kanjidaily.ui.theme.KanjiDailyTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         val app = application as KanjiDailyApplication
         setContent {
