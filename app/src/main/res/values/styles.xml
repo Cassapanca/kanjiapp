@@ -1,0 +1,5 @@
+<resources>
+    <style name="Theme.KanjiDaily" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowSplashScreenBackground">#FFF7F0</item>
+    </style>
+</resources>
