@@ -21,7 +21,7 @@ interface KanjiDao {
     @Query("SELECT * FROM kanji WHERE character = :character LIMIT 1")
     fun observeKanji(character: String): Flow<KanjiEntity?>
 
-    @Query("SELECT * FROM kanji")
+    @Query("SELECT * FROM kanji ORDER BY jlptLevel, character")
     suspend fun getAll(): List<KanjiEntity>
 
     @Query("SELECT COUNT(*) FROM kanji")

@@ -59,7 +59,10 @@ class KanjiDailyRepository(
     suspend fun setVocabularyFavorite(id: Int, favorite: Boolean) = vocabularyDao.setFavorite(id, favorite)
     suspend fun markKanjiStudied(character: String) = kanjiDao.markStudied(character)
     suspend fun markVocabularyStudied(id: Int) = vocabularyDao.markStudied(id)
-    suspend fun recordQuizAnswer(isCorrect: Boolean) = progressDao.recordQuizAnswer(if (isCorrect) 1 else 0)
+    suspend fun recordQuizAnswer(isCorrect: Boolean) {
+        progressDao.insertInitial()
+        progressDao.recordQuizAnswer(if (isCorrect) 1 else 0)
+    }
     suspend fun allKanjiNow() = kanjiDao.getAll()
     suspend fun allVocabularyNow() = vocabularyDao.getAll()
 }

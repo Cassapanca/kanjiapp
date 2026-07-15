@@ -10,9 +10,10 @@ class ViewModelFactory(
     private val repository: KanjiDailyRepository,
     private val context: Context
 ) : ViewModelProvider.Factory {
+    private val settingsRepository by lazy { SettingsRepository(context.applicationContext) }
+
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        val settingsRepository = SettingsRepository(context)
         return when {
             modelClass.isAssignableFrom(MainViewModel::class.java) -> MainViewModel(repository, settingsRepository) as T
             modelClass.isAssignableFrom(SettingsViewModel::class.java) -> SettingsViewModel(settingsRepository) as T

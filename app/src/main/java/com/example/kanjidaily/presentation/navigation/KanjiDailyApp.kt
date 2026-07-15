@@ -1,5 +1,6 @@
 package com.example.kanjidaily.presentation.navigation
 
+import android.net.Uri
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -11,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -43,7 +45,15 @@ fun KanjiDailyApp(factory: ViewModelProvider.Factory) {
                 tabs.forEach { screen ->
                     NavigationBarItem(
                         selected = currentRoute == screen.route,
-                        onClick = { navController.navigate(screen.route) { launchSingleTop = true } },
+                        onClick = {
+                            navController.navigate(screen.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
                         label = { Text(screen.label) },
                         icon = { Text(screen.icon) }
                     )
@@ -60,7 +70,7 @@ fun KanjiDailyApp(factory: ViewModelProvider.Factory) {
             composable(Screen.Progress.route) { ProgressScreen(mainViewModel) }
             composable(Screen.Settings.route) { SettingsScreen(settingsViewModel) }
             composable("kanji/{character}", listOf(navArgument("character") { type = NavType.StringType })) {
-                KanjiDetailScreen(mainViewModel, it.arguments?.getString("character").orEmpty())
+                KanjiDetailScreen(mainViewModel, Uri.decode(it.arguments?.getString("character").orEmpty()))
             }
             composable("vocabulary/{id}", listOf(navArgument("id") { type = NavType.IntType })) {
                 VocabularyDetailScreen(mainViewModel, it.arguments?.getInt("id") ?: 0)

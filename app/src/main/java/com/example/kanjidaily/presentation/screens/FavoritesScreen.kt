@@ -1,5 +1,6 @@
 package com.example.kanjidaily.presentation.screens
 
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,7 +25,7 @@ fun FavoritesScreen(viewModel: MainViewModel, navController: NavController) {
         SectionTitle("Favorites")
         if (kanji.isEmpty() && vocabulary.isEmpty()) Text("No favorites yet.")
         LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            items(kanji) { item -> KanjiRow(item, { navController.navigate("kanji/${item.character}") }, { viewModel.toggleKanjiFavorite(item) }) }
+            items(kanji) { item -> KanjiRow(item, { navController.navigate("kanji/${Uri.encode(item.character)}") }, { viewModel.toggleKanjiFavorite(item) }) }
             items(vocabulary) { item -> VocabularyRow(item, { navController.navigate("vocabulary/${item.id}") }, { viewModel.toggleVocabularyFavorite(item) }) }
         }
     }

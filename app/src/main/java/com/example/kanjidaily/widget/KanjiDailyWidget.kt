@@ -14,8 +14,8 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import androidx.glance.unit.dp
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.example.kanjidaily.data.local.KanjiDailyDatabase
 import com.example.kanjidaily.data.repository.KanjiDailyRepository
 

@@ -21,7 +21,7 @@ interface VocabularyDao {
     @Query("SELECT * FROM vocabulary WHERE id = :id LIMIT 1")
     fun observeVocabulary(id: Int): Flow<VocabularyEntity?>
 
-    @Query("SELECT * FROM vocabulary")
+    @Query("SELECT * FROM vocabulary ORDER BY jlptLevel, word")
     suspend fun getAll(): List<VocabularyEntity>
 
     @Query("SELECT COUNT(*) FROM vocabulary")

@@ -1,81 +1,83 @@
 # Kanji Daily
 
-Kanji Daily is a native Android MVP for daily Japanese, kanji, and vocabulary study. It is inspired by the idea of lightweight daily practice, but uses an original name, UI, data set, icon placeholder, and implementation.
+Kanji Daily is a small native Android study app built with Kotlin, Jetpack Compose, Room, DataStore, WorkManager, and a Glance app widget.
 
-## Stack
+## Current Status
 
-- Kotlin
-- Jetpack Compose and Material 3
-- MVVM with Repository layer
-- Room Database
-- Coroutines and Flow
-- DataStore Preferences
-- WorkManager
-- Android App Widget with Jetpack Glance
-- Gradle Kotlin DSL
+The app currently includes:
 
-## MVP Features
-
-- Home screen with kanji and vocabulary of the day
-- Kanji list with JLPT filters for All, N5, and N4
-- Vocabulary list with readings, romaji, examples, and translations
+- Home screen with a kanji of the day and vocabulary of the day
+- Kanji and vocabulary lists backed by Room
+- JLPT filters for All, N5, and N4
 - Detail screens for kanji and vocabulary
-- Static stroke-order placeholder for kanji details
-- Quiz with 4 choices, feedback, score, and persisted answer stats
-- Favorites screen for saved kanji and vocabulary
-- Progress screen with studied counts, quiz totals, accuracy, and favorites
-- Settings screen with notification toggle and preferred JLPT level
-- Daily WorkManager job for notification and widget refresh
-- Glance home-screen widget showing the daily kanji
+- Favorites for both kanji and vocabulary
+- Multiple-choice quiz with persisted answer stats
+- Progress screen for studied items, quiz totals, accuracy, and favorites
+- Settings stored with DataStore
+- Daily WorkManager job for widget refresh and optional notifications
+- Android home-screen widget built with Jetpack Glance
 
-## Open in Android Studio
+## Requirements
+
+- Android Studio with Android Gradle Plugin support
+- JDK 17 selected in Android Studio
+- Android SDK 35 installed
+- An emulator or physical device running Android 8.0+; Android 13+ is recommended for notification permission testing
+
+This repository does not currently include a Gradle wrapper. Open it from Android Studio, or generate a wrapper from a machine with Gradle installed.
+
+## Build
 
 1. Open Android Studio.
 2. Choose **Open**.
-3. Select this project folder: `Kanji app`.
-4. Let Gradle sync the project.
+3. Select this project folder.
+4. Let Gradle sync.
+5. Run **Build > Make Project**.
 
-## Run the App
+If building from the terminal after adding a wrapper:
 
-1. Select the `app` run configuration.
-2. Choose an emulator or connected Android device.
-3. Press **Run**.
-
-The database is seeded on first launch with sample JLPT N5/N4 kanji and vocabulary.
-
-## Widget and Notifications
-
-- The widget is implemented with Jetpack Glance in `com.example.kanjidaily.widget`.
-- WorkManager schedules a daily refresh job with a simple default delay.
-- Android 13+ notification permission is requested on launch.
-- The current settings toggle is persisted and ready for deeper scheduling logic; future work should make the worker respect custom notification time and notification opt-out.
-
-## Project Structure
-
-```text
-com.example.kanjidaily
-  data
-    dao
-    entity
-    local
-    repository
-    seed
-  notification
-  presentation
-    components
-    navigation
-    screens
-    viewmodel
-  ui.theme
-  widget
-  worker
+```bash
+./gradlew :app:assembleDebug
 ```
 
-## Next Steps
+## Run
 
-- Add real stroke-order data and drawing practice.
-- Add spaced repetition scheduling.
-- Add search and richer JLPT filters.
-- Make notification time user-configurable.
-- Add instrumented tests for Room and Compose screens.
-- Replace placeholder launcher icon with a polished original brand asset.
+1. Select the `app` run configuration.
+2. Choose an emulator or connected device.
+3. Press **Run**.
+
+The Room database is seeded on first app launch with sample N5/N4 kanji and vocabulary.
+
+## Widget Testing
+
+1. Install and launch the app once so the database can seed.
+2. Long-press the Android launcher home screen.
+3. Open **Widgets**.
+4. Add the **Kanji Daily** widget.
+5. The widget should show the daily kanji, reading, and meaning.
+
+The widget is declared in `AndroidManifest.xml` and configured by `app/src/main/res/xml/kanji_daily_widget_info.xml`.
+
+## Notification Testing
+
+The app creates a notification channel at startup and requests `POST_NOTIFICATIONS` on Android 13+.
+
+The daily worker is scheduled with `ExistingPeriodicWorkPolicy.KEEP`, so relaunching the app does not create duplicate periodic workers. The worker always refreshes the widget; it only posts the daily notification when the settings toggle is enabled and Android notification permission is granted.
+
+For manual testing, use Android Studio's App Inspection tools or trigger WorkManager from a debug build after adding a debug-only entry point.
+
+## Known Limitations
+
+- The project has no Gradle wrapper checked in yet.
+- There are no unit or instrumented tests yet.
+- Stroke order is a visual placeholder, not real stroke data.
+- Notification time is fixed by WorkManager scheduling and is not user-configurable.
+- The sample dataset is intentionally small and only covers a subset of N5/N4.
+
+## Recommended Next Improvements
+
+- Add a Gradle wrapper and CI build check.
+- Add Room repository tests for seeding, favorites, and quiz progress.
+- Add Compose UI tests for navigation and empty states.
+- Replace the stroke-order placeholder with real stroke data.
+- Add user-configurable notification time.

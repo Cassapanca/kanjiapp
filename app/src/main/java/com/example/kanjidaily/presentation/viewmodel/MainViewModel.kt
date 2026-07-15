@@ -11,6 +11,7 @@ import com.example.kanjidaily.data.repository.SettingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -20,6 +21,7 @@ class MainViewModel(
     settingsRepository: SettingsRepository
 ) : ViewModel() {
     private val selectedLevel = MutableStateFlow("All")
+    val currentLevel: StateFlow<String> = selectedLevel
     val daily = MutableStateFlow<DailyPair?>(null)
     val quizState = MutableStateFlow(QuizUiState())
 
@@ -35,6 +37,11 @@ class MainViewModel(
             repository.ensureSeeded()
             daily.value = repository.dailyPair()
             buildQuestion()
+        }
+        viewModelScope.launch {
+            settingsRepository.settings.collectLatest { appSettings ->
+                selectedLevel.value = appSettings.preferredJlpt
+            }
         }
     }
 
@@ -69,6 +76,8 @@ class MainViewModel(
         if (state.selectedAnswer != null) return@launch
         val correct = option == state.correctAnswer
         repository.recordQuizAnswer(correct)
+        state.kanjiCharacter?.let { repository.markKanjiStudied(it) }
+        state.vocabularyId?.let { repository.markVocabularyStudied(it) }
         quizState.value = state.copy(selectedAnswer = option, isCorrect = correct, score = state.score + if (correct) 1 else 0)
     }
 
@@ -77,19 +86,55 @@ class MainViewModel(
     private suspend fun buildQuestion() {
         val kanji = repository.allKanjiNow()
         val vocab = repository.allVocabularyNow()
-        if (kanji.size < 4 || vocab.size < 4) return
-        val useKanji = (System.nanoTime() % 2L) == 0L
+        val canUseKanji = kanji.map { it.meaning }.distinct().size >= 4
+        val canUseVocabulary = vocab.map { it.meaning }.distinct().size >= 4
+
+        if (!canUseKanji && !canUseVocabulary) {
+            quizState.value = QuizUiState(
+                prompt = "Not enough study data yet.",
+                question = "Add at least four unique answers to start a quiz.",
+                score = quizState.value.score
+            )
+            return
+        }
+
+        val useKanji = when {
+            canUseKanji && canUseVocabulary -> (System.nanoTime() % 2L) == 0L
+            canUseKanji -> true
+            else -> false
+        }
         if (useKanji) {
             val answer = kanji.random()
-            repository.markKanjiStudied(answer.character)
-            val options = (kanji.map { it.meaning }.filterNot { it == answer.meaning }.shuffled().take(3) + answer.meaning).shuffled()
-            quizState.value = QuizUiState("What does this kanji mean?", answer.character, options, answer.meaning, score = quizState.value.score)
+            val options = buildOptions(answer.meaning, kanji.map { it.meaning })
+            quizState.value = QuizUiState(
+                prompt = "What does this kanji mean?",
+                question = answer.character,
+                options = options,
+                correctAnswer = answer.meaning,
+                score = quizState.value.score,
+                kanjiCharacter = answer.character
+            )
         } else {
             val answer = vocab.random()
-            repository.markVocabularyStudied(answer.id)
-            val options = (vocab.map { it.meaning }.filterNot { it == answer.meaning }.shuffled().take(3) + answer.meaning).shuffled()
-            quizState.value = QuizUiState("What does this word mean?", answer.word, options, answer.meaning, score = quizState.value.score)
+            val options = buildOptions(answer.meaning, vocab.map { it.meaning })
+            quizState.value = QuizUiState(
+                prompt = "What does this word mean?",
+                question = answer.word,
+                options = options,
+                correctAnswer = answer.meaning,
+                score = quizState.value.score,
+                vocabularyId = answer.id
+            )
         }
+    }
+
+    private fun buildOptions(correctAnswer: String, allMeanings: List<String>): List<String> {
+        val wrongAnswers = allMeanings
+            .filterNot { it == correctAnswer }
+            .distinct()
+            .shuffled()
+            .take(3)
+        return (wrongAnswers + correctAnswer).shuffled()
     }
 }
 
@@ -100,5 +145,7 @@ data class QuizUiState(
     val correctAnswer: String = "",
     val selectedAnswer: String? = null,
     val isCorrect: Boolean? = null,
-    val score: Int = 0
+    val score: Int = 0,
+    val kanjiCharacter: String? = null,
+    val vocabularyId: Int? = null
 )

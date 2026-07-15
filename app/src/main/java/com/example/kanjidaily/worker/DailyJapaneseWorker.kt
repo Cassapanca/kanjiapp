@@ -9,8 +9,10 @@ import androidx.work.WorkerParameters
 import androidx.glance.appwidget.updateAll
 import com.example.kanjidaily.data.local.KanjiDailyDatabase
 import com.example.kanjidaily.data.repository.KanjiDailyRepository
+import com.example.kanjidaily.data.repository.SettingsRepository
 import com.example.kanjidaily.notification.NotificationHelper
 import com.example.kanjidaily.widget.KanjiDailyWidget
+import kotlinx.coroutines.flow.first
 import java.util.concurrent.TimeUnit
 
 class DailyJapaneseWorker(
@@ -21,7 +23,13 @@ class DailyJapaneseWorker(
         val db = KanjiDailyDatabase.getDatabase(applicationContext)
         val repository = KanjiDailyRepository(db.kanjiDao(), db.vocabularyDao(), db.progressDao())
         val daily = repository.dailyPair()
-        NotificationHelper.showDailyNotification(applicationContext, "${daily.vocabulary.word} (${daily.vocabulary.reading}) - ${daily.vocabulary.meaning}")
+        val settings = SettingsRepository(applicationContext).settings.first()
+        if (settings.notificationsEnabled) {
+            NotificationHelper.showDailyNotification(
+                applicationContext,
+                "${daily.vocabulary.word} (${daily.vocabulary.reading}) - ${daily.vocabulary.meaning}"
+            )
+        }
         KanjiDailyWidget.updateAll(applicationContext)
         return Result.success()
     }
@@ -34,7 +42,7 @@ object DailyWorkScheduler {
             .build()
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             "daily_japanese_refresh",
-            ExistingPeriodicWorkPolicy.UPDATE,
+            ExistingPeriodicWorkPolicy.KEEP,
             request
         )
     }
